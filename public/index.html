@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Competitive Programming Report Generator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Competitive Programming Activity Report</h1>
+    <p class="subtitle">Fetch your accepted submissions and export a structured report</p>
+
+    <form id="reportForm" class="form-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="e.g. mohanraj123" required />
+        </div>
+        <div class="form-group">
+          <label for="platform">Platform</label>
+          <select id="platform">
+            <option value="leetcode">LeetCode</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate">Start Date</label>
+          <input type="date" id="startDate" required />
+        </div>
+        <div class="form-group">
+          <label for="endDate">End Date</label>
+          <input type="date" id="endDate" required />
+        </div>
+      </div>
+      <button type="submit" id="generateBtn">Generate Report</button>
+    </form>
+
+    <div id="loader" class="loader hidden">
+      <div class="spinner"></div>
+      <span>Fetching submissions…</span>
+    </div>
+
+    <div id="errorBox" class="error-box hidden"></div>
+
+    <div id="resultSection" class="hidden">
+      <div class="toolbar">
+        <span id="resultCount"></span>
+        <div class="toolbar-buttons">
+          <button id="copyBtn" title="Copy table to clipboard">Copy Table</button>
+          <button id="csvBtn" title="Export as CSV">Export CSV</button>
+          <button id="excelBtn" title="Export as Excel-compatible file">Export Excel</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="reportTable">
+          <thead>
+            <tr>
+              <th>DATE</th>
+              <th>PROGRAM TITLE</th>
+              <th>LINK</th>
+              <th>PLATFORM</th>
+              <th>TOPIC</th>
+              <th>DIFFICULTY</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

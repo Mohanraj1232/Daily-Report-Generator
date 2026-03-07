@@ -1,0 +1,14 @@
+{
+  "name": "competitive-programming-report-generator",
+  "version": "1.0.0",
+  "description": "Fetch competitive programming submissions from LeetCode, Codeforces, and AtCoder and generate structured reports.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0"
+  }
+}
