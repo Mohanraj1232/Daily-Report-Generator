@@ -8,7 +8,10 @@
 </head>
 <body>
   <div class="container">
-    <h1>Competitive Programming Activity Report</h1>
+    <div class="page-header">
+      <h1>Competitive Programming Activity Report</h1>
+      <button class="theme-toggle" id="themeToggle">☀ Light</button>
+    </div>
     <p class="subtitle">Fetch your accepted submissions and export a structured report</p>
 
     <form id="reportForm" class="form-card">
@@ -25,6 +28,9 @@
             <option value="atcoder">AtCoder</option>
           </select>
         </div>
+      </div>
+      <div id="leetcodeNote" class="leetcode-note">
+        ⚠ Note: Due to LeetCode API limitations, only the most recent 20 accepted submissions can be retrieved.
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -47,12 +53,13 @@
     <div id="errorBox" class="error-box hidden"></div>
 
     <div id="resultSection" class="hidden">
+      <div id="statsBar" class="stats-bar hidden"></div>
       <div class="toolbar">
         <span id="resultCount"></span>
         <div class="toolbar-buttons">
-          <button id="copyBtn" title="Copy table to clipboard">Copy Table</button>
-          <button id="csvBtn" title="Export as CSV">Export CSV</button>
-          <button id="excelBtn" title="Export as Excel-compatible file">Export Excel</button>
+          <button id="copyBtn" title="Copy table to clipboard">📋 Copy Table</button>
+          <button id="csvBtn" title="Export as CSV">📄 Export CSV</button>
+          <button id="excelBtn" title="Export as Excel-compatible file">📊 Export Excel</button>
         </div>
       </div>
       <div class="table-wrap">

@@ -16,8 +16,41 @@
   const copyBtn = document.getElementById('copyBtn');
   const csvBtn = document.getElementById('csvBtn');
   const excelBtn = document.getElementById('excelBtn');
+  const themeToggle = document.getElementById('themeToggle');
+  const leetcodeNote = document.getElementById('leetcodeNote');
+  const statsBar = document.getElementById('statsBar');
 
   let currentData = [];
+
+  // ---- theme toggle ----
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light');
+      themeToggle.textContent = '🌙 Dark';
+    } else {
+      document.documentElement.classList.remove('light');
+      themeToggle.textContent = '☀ Light';
+    }
+    localStorage.setItem('theme', theme);
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'dark');
+
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.classList.contains('light') ? 'light' : 'dark';
+    applyTheme(current === 'light' ? 'dark' : 'light');
+  });
+
+  // ---- leetcode note visibility ----
+  function updateLeetcodeNote() {
+    if (platformSelect.value === 'leetcode') {
+      leetcodeNote.classList.remove('hidden');
+    } else {
+      leetcodeNote.classList.add('hidden');
+    }
+  }
+  updateLeetcodeNote();
+  platformSelect.addEventListener('change', updateLeetcodeNote);
 
   // ---- helpers ----
   function formatDate(iso) {
@@ -43,6 +76,27 @@
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // ---- stats bar ----
+  function renderStats(submissions) {
+    const counts = { easy: 0, medium: 0, hard: 0, unknown: 0 };
+    for (const s of submissions) {
+      const d = (s.difficulty || '').toLowerCase();
+      if (d === 'easy') counts.easy++;
+      else if (d === 'medium') counts.medium++;
+      else if (d === 'hard') counts.hard++;
+      else counts.unknown++;
+    }
+    statsBar.innerHTML =
+      `<span class="stats-total">📊 ${submissions.length} Submission${submissions.length !== 1 ? 's' : ''} Found</span>` +
+      `<span class="stats-breakdown">` +
+        `<span class="stat-easy">Easy: ${counts.easy}</span>` +
+        `<span class="stat-medium">Medium: ${counts.medium}</span>` +
+        `<span class="stat-hard">Hard: ${counts.hard}</span>` +
+        (counts.unknown ? `<span class="stat-unknown">Unknown: ${counts.unknown}</span>` : '') +
+      `</span>`;
+    show(statsBar);
   }
 
   // ---- fetch ----
@@ -94,6 +148,7 @@
 
     hide(errorBox);
     hide(resultSection);
+    hide(statsBar);
     show(loader);
     generateBtn.disabled = true;
 
@@ -114,6 +169,7 @@
       currentData = submissions;
       resultCount.textContent = `${submissions.length} submission${submissions.length !== 1 ? 's' : ''} found`;
       renderTable(submissions);
+      renderStats(submissions);
       show(resultSection);
     } catch (err) {
       errorBox.textContent = err.message;
@@ -164,8 +220,8 @@
     navigator.clipboard.write([
       new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob }),
     ]).then(() => {
-      copyBtn.textContent = 'Copied!';
-      setTimeout(() => (copyBtn.textContent = 'Copy Table'), 1500);
+      copyBtn.textContent = '✅ Copied!';
+      setTimeout(() => (copyBtn.textContent = '📋 Copy Table'), 1500);
     });
   });
 
