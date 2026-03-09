@@ -1,6 +1,8 @@
 const express = require('express');
 const path = require('path');
 const { fetchLeetCode } = require('./services/leetcode');
+const { fetchCodeforces } = require('./services/codeforces');
+const { fetchAtCoder } = require('./services/atcoder');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,6 +43,34 @@ app.get('/api/leetcode/:username', async (req, res) => {
     res.json(all);
   } catch (err) {
     console.error('LeetCode error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/codeforces/:username', async (req, res) => {
+  try {
+    const username = sanitizeUsername(req.params.username);
+    if (!username) return res.status(400).json({ error: 'Invalid username' });
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) return res.status(400).json({ error: 'startDate and endDate query params required' });
+    const all = await fetchCodeforces(username);
+    res.json(filterByDateRange(all, startDate, endDate));
+  } catch (err) {
+    console.error('Codeforces error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/atcoder/:username', async (req, res) => {
+  try {
+    const username = sanitizeUsername(req.params.username);
+    if (!username) return res.status(400).json({ error: 'Invalid username' });
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) return res.status(400).json({ error: 'startDate and endDate query params required' });
+    const all = await fetchAtCoder(username);
+    res.json(filterByDateRange(all, startDate, endDate));
+  } catch (err) {
+    console.error('AtCoder error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
