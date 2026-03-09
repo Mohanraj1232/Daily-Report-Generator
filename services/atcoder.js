@@ -11,11 +11,27 @@ async function fetchProblemsMap() {
   return map;
 }
 
+async function fetchDifficultyMap() {
+  const resp = await fetch('https://kenkoooo.com/atcoder/resources/problem-models.json');
+  if (!resp.ok) throw new Error(`AtCoder difficulty API returned ${resp.status}`);
+  return resp.json();
+}
+
+function getAtCoderDifficulty(problemId, difficultyMap) {
+  const model = difficultyMap[problemId];
+  if (!model || model.difficulty == null) return 'Unknown';
+  const d = model.difficulty;
+  if (d < 400) return 'Easy';
+  if (d < 800) return 'Medium';
+  return 'Hard';
+}
+
 async function fetchAtCoder(username) {
   const url = `https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user=${encodeURIComponent(username)}&from_second=0`;
-  const [resp, problemMap] = await Promise.all([
+  const [resp, problemMap, difficultyMap] = await Promise.all([
     fetch(url),
     fetchProblemsMap(),
+    fetchDifficultyMap(),
   ]);
   if (!resp.ok) throw new Error(`AtCoder API returned ${resp.status}`);
   const submissions = await resp.json();
@@ -50,7 +66,7 @@ async function fetchAtCoder(username) {
       link: `https://atcoder.jp/contests/${s.contest_id}/submissions/${s.id}`,
       platform: 'Atcoder',
       topics: topic,
-      difficulty: 'Unknown',
+      difficulty: getAtCoderDifficulty(s.problem_id, difficultyMap),
     });
   }
 

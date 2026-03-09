@@ -1,10 +1,18 @@
 const fetch = require('node-fetch');
 
-function getDifficulty(rating) {
-  if (rating == null) return 'Unknown';
-  if (rating < 1200) return 'Easy';
-  if (rating <= 1900) return 'Medium';
-  return 'Hard';
+function getDifficulty(rating, index) {
+  if (rating != null) {
+    if (rating < 1200) return 'Easy';
+    if (rating < 1900) return 'Medium';
+    return 'Hard';
+  }
+  if (index) {
+    const letter = index.charAt(0).toUpperCase();
+    if (letter <= 'B') return 'Easy';
+    if (letter <= 'D') return 'Medium';
+    return 'Hard';
+  }
+  return 'Unknown';
 }
 
 async function fetchCodeforces(username) {
@@ -32,10 +40,11 @@ async function fetchCodeforces(username) {
     results.push({
       date: d.toISOString(),
       title: `${s.problem.index}. ${s.problem.name}`,
-      link: `https://codeforces.com/problemset/problem/${s.problem.contestId}/${s.problem.index}`,
+      problemLink: `https://codeforces.com/problemset/problem/${s.problem.contestId}/${s.problem.index}`,
+      link: `https://codeforces.com/contest/${s.problem.contestId}/submission/${s.id}`,
       platform: 'Codeforces',
       topics: (s.problem.tags || []).join(', '),
-      difficulty: getDifficulty(s.problem.rating),
+      difficulty: getDifficulty(s.problem.rating, s.problem.index),
     });
   }
 
