@@ -6,6 +6,7 @@ const REQUEST_TIMEOUT_MS = 15000;
 
 let problemsMapPromise;
 let difficultyMapPromise;
+let problemDetailsPromise;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -62,22 +63,56 @@ async function fetchDifficultyMap() {
   return difficultyMapPromise;
 }
 
-function getAtCoderDifficulty(problemId, difficultyMap) {
-  const model = difficultyMap[problemId];
-  if (!model || model.difficulty == null) return 'Unknown';
-  const d = model.difficulty;
-  if (d < 400) return 'Easy';
-  if (d < 800) return 'Medium';
-  return 'Hard';
+async function fetchProblemDetails() {
+  if (!problemDetailsPromise) {
+    problemDetailsPromise = (async () => {
+      const problems = await fetchJsonWithRetry('https://kenkoooo.com/atcoder/resources/problems.json', 'AtCoder problems details API');
+      const map = new Map();
+      for (const p of problems) {
+        map.set(p.id, p);
+      }
+      return map;
+    })().catch((err) => {
+      problemDetailsPromise = undefined;
+      throw err;
+    });
+  }
+  return problemDetailsPromise;
+}
+
+function getAtCoderDifficulty(problemId, difficultyMap, problemDetails) {
+  // First try to get difficulty from the difficulty map
+  let model = difficultyMap[problemId];
+  
+  if (model && model.difficulty != null) {
+    const d = model.difficulty;
+    if (d < 800) return 'Easy';
+    if (d < 1200) return 'Medium';
+    return 'Hard';
+  }
+  
+  // Fallback: use problem index to infer difficulty
+  // In AtCoder contests, typically: A=Easy, B/C=Medium, D+=Hard
+  const problemDetail = problemDetails.get(problemId);
+  if (problemDetail && problemDetail.problem_index) {
+    const index = problemDetail.problem_index.toUpperCase();
+    if (index === 'A') return 'Easy';
+    if (index === 'B' || index === 'C') return 'Medium';
+    return 'Hard';
+  }
+  
+  // If all else fails
+  return 'Unknown';
 }
 
 async function fetchAtCoder(username, startDate, endDate) {
   const startTs = startDate ? Math.floor(new Date(startDate).setHours(0, 0, 0, 0) / 1000) : 0;
   const endTs = endDate ? Math.floor(new Date(endDate).setHours(23, 59, 59, 999) / 1000) : Number.MAX_SAFE_INTEGER;
 
-  const [problemMap, difficultyMap] = await Promise.all([
+  const [problemMap, difficultyMap, problemDetails] = await Promise.all([
     fetchProblemsMap(),
     fetchDifficultyMap(),
+    fetchProblemDetails(),
   ]);
 
   const submissions = [];
@@ -112,13 +147,21 @@ async function fetchAtCoder(username, startDate, endDate) {
     const ts = s.epoch_second * 1000;
     const d = new Date(ts);
 
-    // Derive contest category from contest_id prefix as a rough topic
+    // Derive contest category and number from contest_id
     let topic = '';
     if (s.contest_id) {
-      if (s.contest_id.startsWith('abc')) topic = 'AtCoder Beginner Contest';
-      else if (s.contest_id.startsWith('arc')) topic = 'AtCoder Regular Contest';
-      else if (s.contest_id.startsWith('agc')) topic = 'AtCoder Grand Contest';
-      else topic = s.contest_id;
+      if (s.contest_id.startsWith('abc')) {
+        const num = s.contest_id.replace('abc', '');
+        topic = `AtCoder Beginner Contest ${num}`;
+      } else if (s.contest_id.startsWith('arc')) {
+        const num = s.contest_id.replace('arc', '');
+        topic = `AtCoder Regular Contest ${num}`;
+      } else if (s.contest_id.startsWith('agc')) {
+        const num = s.contest_id.replace('agc', '');
+        topic = `AtCoder Grand Contest ${num}`;
+      } else {
+        topic = s.contest_id;
+      }
     }
 
     results.push({
@@ -127,7 +170,7 @@ async function fetchAtCoder(username, startDate, endDate) {
       link: `https://atcoder.jp/contests/${s.contest_id}/submissions/${s.id}`,
       platform: 'Atcoder',
       topics: topic,
-      difficulty: getAtCoderDifficulty(s.problem_id, difficultyMap),
+      difficulty: getAtCoderDifficulty(s.problem_id, difficultyMap, problemDetails),
     });
   }
 
