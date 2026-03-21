@@ -67,7 +67,7 @@ app.get('/api/atcoder/:username', async (req, res) => {
     if (!username) return res.status(400).json({ error: 'Invalid username' });
     const { startDate, endDate } = req.query;
     if (!startDate || !endDate) return res.status(400).json({ error: 'startDate and endDate query params required' });
-    const all = await fetchAtCoder(username);
+    const all = await fetchAtCoder(username, startDate, endDate);
     res.json(filterByDateRange(all, startDate, endDate));
   } catch (err) {
     console.error('AtCoder error:', err.message);
