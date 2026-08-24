@@ -1,7 +1,6 @@
 (() => {
   'use strict';
 
-  // ---- DOM refs ----
   const form = document.getElementById('reportForm');
   const usernameInput = document.getElementById('username');
   const platformSelect = document.getElementById('platform');
@@ -19,17 +18,16 @@
   const themeToggle = document.getElementById('themeToggle');
   const leetcodeNote = document.getElementById('leetcodeNote');
   const statsBar = document.getElementById('statsBar');
+  const toast = document.getElementById('toast');
 
   let currentData = [];
 
-  // ---- theme toggle ----
+  // ---- theme ----
   function applyTheme(theme) {
     if (theme === 'light') {
       document.documentElement.classList.add('light');
-      themeToggle.textContent = '🌙 Dark';
     } else {
       document.documentElement.classList.remove('light');
-      themeToggle.textContent = '☀ Light';
     }
     localStorage.setItem('theme', theme);
   }
@@ -41,7 +39,18 @@
     applyTheme(current === 'light' ? 'dark' : 'light');
   });
 
-  // ---- leetcode note visibility ----
+  // ---- platform buttons ----
+  const platformBtns = document.querySelectorAll('.platform-btn');
+  platformBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      platformBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      platformSelect.value = btn.dataset.value;
+      updateLeetcodeNote();
+    });
+  });
+
+  // ---- leetcode note ----
   function updateLeetcodeNote() {
     if (platformSelect.value === 'leetcode') {
       leetcodeNote.classList.remove('hidden');
@@ -51,6 +60,17 @@
   }
   updateLeetcodeNote();
   platformSelect.addEventListener('change', updateLeetcodeNote);
+
+  // ---- toast ----
+  function showToast(message) {
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.classList.add('hidden'), 300);
+    }, 2500);
+  }
 
   // ---- helpers ----
   function formatDate(iso) {
@@ -67,6 +87,14 @@
     if (d === 'medium') return 'badge-medium';
     if (d === 'hard') return 'badge-hard';
     return 'badge-unknown';
+  }
+
+  function platformTagClass(platform) {
+    const p = (platform || '').toLowerCase();
+    if (p === 'leetcode') return 'tag-leetcode';
+    if (p === 'codeforces') return 'tag-codeforces';
+    if (p === 'atcoder') return 'tag-atcoder';
+    return '';
   }
 
   function show(el) { el.classList.remove('hidden'); }
@@ -88,14 +116,13 @@
       else if (d === 'hard') counts.hard++;
       else counts.unknown++;
     }
-    statsBar.innerHTML =
-      `<span class="stats-total">📊 ${submissions.length} Submission${submissions.length !== 1 ? 's' : ''} Found</span>` +
-      `<span class="stats-breakdown">` +
-        `<span class="stat-easy">Easy: ${counts.easy}</span>` +
-        `<span class="stat-medium">Medium: ${counts.medium}</span>` +
-        `<span class="stat-hard">Hard: ${counts.hard}</span>` +
-        (counts.unknown ? `<span class="stat-unknown">Unknown: ${counts.unknown}</span>` : '') +
-      `</span>`;
+
+    let html = `<div class="stat-card stat-total"><div class="stat-value">${submissions.length}</div><div class="stat-label">Total</div></div>`;
+    html += `<div class="stat-card stat-easy"><div class="stat-value">${counts.easy}</div><div class="stat-label">Easy</div></div>`;
+    html += `<div class="stat-card stat-medium"><div class="stat-value">${counts.medium}</div><div class="stat-label">Medium</div></div>`;
+    html += `<div class="stat-card stat-hard"><div class="stat-value">${counts.hard}</div><div class="stat-label">Hard</div></div>`;
+
+    statsBar.innerHTML = html;
     show(statsBar);
   }
 
@@ -112,8 +139,6 @@
   // ---- render table ----
   function renderTable(submissions) {
     tbody.innerHTML = '';
-
-    // Sort by date
     submissions.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     let lastDate = '';
@@ -124,12 +149,14 @@
 
       const tr = document.createElement('tr');
       const problemUrl = s.problemLink || s.link;
+      const tagClass = platformTagClass(s.platform);
+
       tr.innerHTML = `
         <td>${showDate ? escapeHtml(dateStr) : ''}</td>
         <td><a href="${escapeHtml(problemUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.title)}</a></td>
-        <td><a href="${escapeHtml(s.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.link)}</a></td>
-        <td>${escapeHtml(s.platform)}</td>
-        <td>${escapeHtml(s.topics || '')}</td>
+        <td><a href="${escapeHtml(s.link)}" target="_blank" rel="noopener noreferrer">View</a></td>
+        <td><span class="platform-tag ${tagClass}">${escapeHtml(s.platform)}</span></td>
+        <td>${escapeHtml(s.topics || '-')}</td>
         <td><span class="badge ${badgeClass(s.difficulty)}">${escapeHtml(s.difficulty)}</span></td>
       `;
       tbody.appendChild(tr);
@@ -184,9 +211,7 @@
   copyBtn.addEventListener('click', () => {
     if (!currentData.length) return;
 
-    // Build HTML table so hyperlinks survive paste into spreadsheets
     let html = '<table><tr><th>DATE</th><th>PROGRAM TITLE</th><th>LINK</th><th>PLATFORM</th><th>TOPIC</th><th>DIFFICULTY</th></tr>';
-    // Build plain text fallback
     const headerText = 'DATE\tPROGRAM TITLE\tLINK\tPLATFORM\tTOPIC\tDIFFICULTY';
     let lastDate = '';
     const textRows = [];
@@ -220,8 +245,7 @@
     navigator.clipboard.write([
       new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob }),
     ]).then(() => {
-      copyBtn.textContent = '✅ Copied!';
-      setTimeout(() => (copyBtn.textContent = '📋 Copy Table'), 1500);
+      showToast('Table copied to clipboard');
     });
   });
 
@@ -244,32 +268,17 @@
         s.difficulty,
       ].map(csvEscape).join(',');
     });
-    downloadFile('report.csv', 'text/csv;charset=utf-8;', '\uFEFF' + [header, ...rows].join('\r\n'));
+    downloadFile('report.csv', 'text/csv;charset=utf-8;', '﻿' + [header, ...rows].join('\r\n'));
+    showToast('CSV file downloaded');
   });
 
-  // ---- export Excel (TSV with .xls) ----
+  // ---- export Excel ----
   excelBtn.addEventListener('click', () => {
     if (!currentData.length) return;
-    const header = 'DATE\tPROGRAM TITLE\tLINK\tPLATFORM\tTOPIC\tDIFFICULTY';
-    let lastDate = '';
-    const rows = currentData.map((s) => {
-      const dateStr = formatDate(s.date);
-      const showDate = dateStr !== lastDate;
-      lastDate = dateStr;
-      return [
-        showDate ? dateStr : '',
-        s.title,
-        s.link,
-        s.platform,
-        s.topics || '',
-        s.difficulty,
-      ].join('\t');
-    });
 
-    // Build a simple HTML table that Excel can open
     let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table>';
     html += '<tr><th>DATE</th><th>PROGRAM TITLE</th><th>LINK</th><th>PLATFORM</th><th>TOPIC</th><th>DIFFICULTY</th></tr>';
-    lastDate = '';
+    let lastDate = '';
     currentData.forEach((s) => {
       const dateStr = formatDate(s.date);
       const showDate = dateStr !== lastDate;
@@ -286,6 +295,7 @@
     html += '</table></body></html>';
 
     downloadFile('report.xls', 'application/vnd.ms-excel', html);
+    showToast('Excel file downloaded');
   });
 
   function downloadFile(filename, mime, content) {

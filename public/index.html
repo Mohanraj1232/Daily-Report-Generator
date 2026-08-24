@@ -3,82 +3,155 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Competitive Programming Report Generator</title>
+  <title>CP Report Generator</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+  <div class="bg-decoration">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
   <div class="container">
-    <div class="page-header">
-      <h1>Competitive Programming Activity Report</h1>
-      <button class="theme-toggle" id="themeToggle">☀ Light</button>
-    </div>
-    <p class="subtitle">Fetch your accepted submissions and export a structured report</p>
+    <header class="app-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1>CP Report Generator</h1>
+          <p class="tagline">Track your competitive programming submissions</p>
+        </div>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </header>
 
     <form id="reportForm" class="form-card">
-      <div class="form-row">
+      <div class="form-section">
         <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" placeholder="e.g. mohanraj123" required />
+          <label for="username">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Username
+          </label>
+          <input type="text" id="username" placeholder="Enter your username" required />
         </div>
+
         <div class="form-group">
-          <label for="platform">Platform</label>
-          <select id="platform">
+          <label for="platform">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Platform
+          </label>
+          <div class="platform-select">
+            <button type="button" class="platform-btn active" data-value="leetcode">
+              <span class="platform-dot lc"></span>
+              LeetCode
+            </button>
+            <button type="button" class="platform-btn" data-value="codeforces">
+              <span class="platform-dot cf"></span>
+              Codeforces
+            </button>
+            <button type="button" class="platform-btn" data-value="atcoder">
+              <span class="platform-dot ac"></span>
+              AtCoder
+            </button>
+          </div>
+          <select id="platform" class="sr-only">
             <option value="leetcode">LeetCode</option>
             <option value="codeforces">Codeforces</option>
             <option value="atcoder">AtCoder</option>
           </select>
         </div>
       </div>
-      <div id="leetcodeNote" class="leetcode-note">
-        ⚠ Note: Due to LeetCode API limitations, only the most recent 20 accepted submissions can be retrieved.
+
+      <div id="leetcodeNote" class="info-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Due to LeetCode API limitations, only the most recent 20 accepted submissions can be retrieved.</span>
       </div>
-      <div class="form-row">
+
+      <div class="form-section">
         <div class="form-group">
-          <label for="startDate">Start Date</label>
+          <label for="startDate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Start Date
+          </label>
           <input type="date" id="startDate" required />
         </div>
         <div class="form-group">
-          <label for="endDate">End Date</label>
+          <label for="endDate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            End Date
+          </label>
           <input type="date" id="endDate" required />
         </div>
       </div>
-      <button type="submit" id="generateBtn">Generate Report</button>
+
+      <button type="submit" id="generateBtn" class="btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Generate Report
+      </button>
     </form>
 
     <div id="loader" class="loader hidden">
       <div class="spinner"></div>
-      <span>Fetching submissions…</span>
+      <span>Fetching submissions...</span>
     </div>
 
     <div id="errorBox" class="error-box hidden"></div>
 
     <div id="resultSection" class="hidden">
       <div id="statsBar" class="stats-bar hidden"></div>
+
       <div class="toolbar">
         <span id="resultCount"></span>
         <div class="toolbar-buttons">
-          <button id="copyBtn" title="Copy table to clipboard">📋 Copy Table</button>
-          <button id="csvBtn" title="Export as CSV">📄 Export CSV</button>
-          <button id="excelBtn" title="Export as Excel-compatible file">📊 Export Excel</button>
+          <button id="copyBtn" class="btn-tool" title="Copy table to clipboard">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+          <button id="csvBtn" class="btn-tool" title="Export as CSV">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            CSV
+          </button>
+          <button id="excelBtn" class="btn-tool" title="Export as Excel">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+            Excel
+          </button>
         </div>
       </div>
+
       <div class="table-wrap">
         <table id="reportTable">
           <thead>
             <tr>
-              <th>DATE</th>
-              <th>PROGRAM TITLE</th>
-              <th>LINK</th>
-              <th>PLATFORM</th>
-              <th>TOPIC</th>
-              <th>DIFFICULTY</th>
+              <th>Date</th>
+              <th>Problem</th>
+              <th>Link</th>
+              <th>Platform</th>
+              <th>Topics</th>
+              <th>Difficulty</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
     </div>
+
+    <footer class="app-footer">
+      <p>Built with Node.js & Express &mdash; Data from LeetCode, Codeforces & AtCoder APIs</p>
+    </footer>
   </div>
+
+  <div id="toast" class="toast hidden"></div>
 
   <script src="script.js"></script>
 </body>
